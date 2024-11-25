@@ -271,6 +271,8 @@ function [area] = peakFitter(dataDir,figDir,flName,dyeType,sampleType)
             peak = Pearson7(wavelength,params(4*iPeak+1:4*iPeak+4));
             area = [area trapz(wavelength,peak)];
 
+            area_ = Pearson7_Area(params(4*iPeak+1:4*iPeak+4));
+
             txt = sprintf('%10d %12.3f %12.3f %12.3f %12.3f %12.3f\n', ...
             iPeak+1, paramsPrint(iPeak+1,:), area(end));
         else
@@ -281,6 +283,7 @@ function [area] = peakFitter(dataDir,figDir,flName,dyeType,sampleType)
         end
     end
 
+    tmp = [wavelength peak ]
     axis off
 
     drawnow;
@@ -294,52 +297,10 @@ function [area] = peakFitter(dataDir,figDir,flName,dyeType,sampleType)
 
     print(fig,flNameFig,'-dpng')
 
-%%
-% [curve] = peakSum(wavelength,params);
-%     clf
-%     % subplot(100,1,1:40)
-%     plot(wavelength,curve,'k','linewidth',2); hold on
-%     scatter(wavelength,intensity,10,'filled','k'); hold on
-% 
-% 
-%     for iPeak = 0:nPeak-1
-%         if 1%params(4*iPeak+2) > 1
-%             peak = Pearson7(wavelength,params(4*iPeak+1:4*iPeak+4));
-%             plot(wavelength,peak,'k-','linewidth',1); hold on
-%         end
-%     end
-% 
-%     % title(flName,'Interpreter','none')
-%     xlim([390 600])
-%     ylim([-1 120])
-% 
-%     xlabel('Excitation Wavelength [nm]')
-%     ylabel('Synchronous Scan Intensity')
-% 
-% 
-%     set(gca,'fontsize',20)
-% 
-% 
-% 
-%     drawnow;
-% 
-% 
-% 
-% 
-% 
-%     fig = gcf;
-%     fig.Units = 'inches';
-%     fig.PaperPosition = [0 0 9 6];
-% 
-% 
-% 
-%     flNameFig = sprintf([figDir flName(1:end-4) '.png']);
-% 
-%     print(fig,flNameFig,'-dpng')
 
 end
 
-
+%% sub-functions
 function [curve] = peakSum(x,params)    
     nPeak = length(params)/4;
 
@@ -356,3 +317,47 @@ function [curve] = Pearson7(x,params)
         (1+((x-params(1))./params(3)).^2*(2^(1/params(4))-1)).^params(4);
 end
 
+function [curve] = Pearson7_(x,params)    
+    curve = params(2)./...
+        (1+((x-params(1))./params(3)).^2*(2^(1/params(4))-1)).^params(4);
+end
+
+function area = Pearson7_Area(params)
+    % % Analytical integration of the given function from -inf to inf
+    % % params is a vector containing [p1, p2, p3, p4]
+    % 
+    % % Extract parameters from the input vector
+    % p1 = params(1);
+    % p2 = params(2);
+    % p3 = params(3);
+    % p4 = params(4);
+    % 
+    % % Define the constants based on the given parameters
+    % alpha = 2^(1/p4) - 1;
+    % beta = p4;
+    % 
+    % % Compute the integral using the analytical solution
+    % term1 = p2 * p3 * sqrt(pi);
+    % term2 = alpha^(beta - 1/2);
+    % term3 = gamma(beta - 1/2) / gamma(beta);
+    % 
+    % area = term1 / term2 * term3;
+
+
+    
+    % Extract individual parameters from the array.
+    p1 = params(1);  % Horizontal shift (not used in the integration but still part of params)
+    p2 = params(2);  % Amplitude scaling factor
+    p3 = params(3);  % Width parameter
+    p4 = params(4);  % Power shape parameter
+    
+    % Calculate B.
+    B = 2^(1/p4) - 1;
+    
+    % Define the area under the curve using the derived formula.
+    % Note: The Gamma function in MATLAB is computed using the gamma() function.
+    area = p2 * p3 * sqrt(pi) * gamma(p4 - 0.5) / ((B)^(p4 - 0.5) * gamma(p4));
+    
+    % Display the result.
+    % disp(['The area under the curve from -Inf to Inf is: ', num2str(area)]);
+end

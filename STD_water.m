@@ -11,18 +11,22 @@ clear all; clc; clf
 %         5x: 0.8 ml : 4 ml  ->  6 x
 %         2x:   2 ml : 2 ml  ->  2 x
 % 
-%     concentrations of standard samples
-%        cnc = [0.00995; 0.0305; 0.1044; 0.3152; 0.97891; 2.87]; % [ppb]
 % =========================================================================
 
-codeDir = [pwd '/'];
-dataDir = [codeDir 'uranineSTDs/'];
-resultsDir = [dataDir 'results/'];
-figDir = [dataDir 'fig/']; if ~exist(figDir,'dir'); mkdir(figDir); end
+publicDir = ['/blue/yoon.s/public/'];
+campaignDir = [publicDir 'BearSpring2023/'];
 
-dyeType = 'uranine';
-sampleType = 'water';
+resultsDir = [pwd '/BearSpring2023/']; 
+if ~exist(resultsDir,'dir'); mkdir(resultsDir); end
+
+figDir = [resultsDir 'fig/']; 
+if ~exist(figDir,'dir'); mkdir(figDir); end
+
 %% file name recognition
+dyeType = 'uranine'; % 'SrB', 'uranine', or 'RWT'
+sampleType = 'water';
+
+dataDir = sprintf('%sSTD_%s/',campaignDir, dyeType );
 flNameStruct = dir(dataDir);
 nSample = 0;
 for il = 3:numel(flNameStruct)
@@ -43,7 +47,7 @@ for iSample = 1:nSample
 
     cnc(iSample) = str2double(sprintf('%s.%s',note{2},note{3}));
     if length(note) >= 4
-        tmp = textscan(note{5},'%s','delimiter','x'); tmp = tmp{1};
+        tmp = textscan(note{4},'%s','delimiter','x'); tmp = tmp{1};
         dilutionFactor(iSample,1) = str2num(tmp{1});
     else
         dilutionFactor(iSample,1) = 1;
@@ -56,7 +60,7 @@ dilutionFactor(find(dilutionFactor == 5)) = 6;
 %% Peak Fitting
 area = zeros(length(flNameList_todo),1);
 for iSample = 1:length(flNameList_todo)
-    area(iSample) = peakFitter(dataDir,figDir,flNameList_todo{iSample},dyeType,sampleType);
+    area(iSample) = peakFitter(dataDir,figDir,flNameList_todo{iSample},'tracer',sampleType);
 end
 
 %% standard data analysis
