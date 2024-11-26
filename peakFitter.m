@@ -56,11 +56,11 @@ function [area] = peakFitter(dataDir,figDir,flName,sampleType,nIter)
     %% contraints according to dye and samples
     if strcmp(sampleType,'water') 
         clc
-        nPeak = 11;
-        params = [ linspace(300, 500, 4) 508 560 582 linspace(600,800,4); ... center
-                   10*ones(1,4)    500 500 500  10*ones(1,4); ... height
-                   100    30*ones(1,3) 10 10 10 30*ones(1,4); ... hwhm
-                    2*ones(1,4)    10  10 10  30*ones(1,4)];  % shape
+        nPeak = 17;
+        params = [ linspace(300, 500, 7) 540 508 560 582 linspace(600,800,6); ... center
+                   10*ones(1,8)    500 500 500  10*ones(1,6); ... height
+                   100    30*ones(1,7) 10 10 10 30*ones(1,6); ... hwhm
+                    2*ones(1,8)    10  10 10  30*ones(1,6)];  % shape
         params = params(:);
         
         costFnc = @(params) sqrt(mean((intensity-peakSum(wavelength,params)).^2)); 
@@ -77,19 +77,19 @@ function [area] = peakFitter(dataDir,figDir,flName,sampleType,nIter)
         shape = [zeros(1,nPeak); ... center
                  zeros(1,nPeak); ... height
                  zeros(1,nPeak); ... hwhm
-                 0 2 2 2 10 10 10 5 5 5 5];    % shape
+                 0 2*ones(1,7) 10 10 10 5*ones(1,6)];    % shape
         shape = shape(:);
         
         Aeq = diag(fixed);
         beq = shape;
         
-        lb = [320   370   380   420   506 555  580  600*ones(1,4); ... center
+        lb = [320  340  360  370  410  430  480 530  506  555  580  600*ones(1,6); ... center
               zeros(1,nPeak);    ... height
               5*ones(1,nPeak);    ... hwhm
               0.4 zeros(1,nPeak-1);];    % shape
-        ub = [350   450   420   480   510  565 584  850*ones(1,4); ... center
-              700*ones(1,4) inf*ones(1,3) 700*ones(1,4);... height
-              300   100   100   100    15   15  15  100   100   100 100;    ... hwhm
+        ub = [380  400  450  430  470  490  505 550  510  565 584  850*ones(1,6); ... center
+              500*ones(1,8) inf*ones(1,3) 500*ones(1,6);... height
+              300*ones(1,8) 15   15  15  100*ones(1,6);    ... hwhm
               0.9 100*ones(1,nPeak-1);]; % shape
     
     elseif strcmp(sampleType,'eluent')
@@ -121,11 +121,11 @@ function [area] = peakFitter(dataDir,figDir,flName,sampleType,nIter)
         Aeq = diag(fixed);
         beq = shape;
         
-        lb = [320   370   380   420   512   514   550   550; ... center
+        lb = [320   350   380   420   512   514   550   550; ... center
               zeros(1,nPeak);    ... height
                 0     0     0     0     5     0     0     0;    ... hwhm
               0.4 zeros(1,nPeak-1);];    % shape
-        ub = [370   450   420   480   516   550   780   780; ... center
+        ub = [370   410   430   480   516   550   780   780; ... center
               inf*ones(1,nPeak); ... height
               300   100   100   100    15   100   100   100;    ... hwhm
               0.9 100*ones(1,nPeak-1);]; % shape
@@ -147,7 +147,7 @@ function [area] = peakFitter(dataDir,figDir,flName,sampleType,nIter)
     
     
         % clr = 'kkkkrbkkk';
-        clr = 'kkkkkkkkkkkkkkkk';
+        clr = 'kkkkkkkkkkkkkkkkkkkk';
     
         subplot(100,1,1:40)
         plot(wavelength,intensity); hold on
@@ -173,7 +173,7 @@ function [area] = peakFitter(dataDir,figDir,flName,sampleType,nIter)
             plot([params(4*iPeak+1) params(4*iPeak+1)],[-15 15],clr(iPeak+1));      
         end
         xlim(xl)
-        ylim([-7 7])
+        ylim([-7 7]*10)
     
     
         SSR = sum((curve - intensity).^2); % sum of squared error
@@ -202,7 +202,7 @@ function [area] = peakFitter(dataDir,figDir,flName,sampleType,nIter)
         text(0,yl(2)-2*diff(yl)/(nPeak+1),txt,'fontsize',12)
         area = [];
         for iPeak = 0:nPeak-1
-            if iPeak >= 4 && iPeak <= 6
+            if iPeak >= 8 && iPeak <= 10
                 peak = Pearson7(wavelength,params(4*iPeak+1:4*iPeak+4));
                 area = [area trapz(wavelength,peak)];
                 % area_ = Pearson7_Area(params(4*iPeak+1:4*iPeak+4));
