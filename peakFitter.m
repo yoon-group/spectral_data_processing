@@ -55,7 +55,7 @@ function [area] = peakFitter(dataDir,figDir,flName,sampleType,nIter)
     
     %% contraints according to dye and samples
     if strcmp(sampleType,'water') 
-        clc
+        % clc
         nPeak = 17;
         params = [ linspace(300, 500, 7) 540 508 560 582 linspace(600,800,6); ... center
                    10*ones(1,8)    500 500 500  10*ones(1,6); ... height
@@ -83,12 +83,12 @@ function [area] = peakFitter(dataDir,figDir,flName,sampleType,nIter)
         Aeq = diag(fixed);
         beq = shape;
         
-        lb = [320  340  360  370  410  430  480 530  506  555  580  600*ones(1,6); ... center
+        lb = [320  340  360  370  410  430  480 525  506  555  580  600*ones(1,6); ... center
               zeros(1,nPeak);    ... height
               5*ones(1,nPeak);    ... hwhm
               0.4 zeros(1,nPeak-1);];    % shape
-        ub = [380  400  450  430  470  490  505 550  510  565 584  850*ones(1,6); ... center
-              500*ones(1,8) inf*ones(1,3) 500*ones(1,6);... height
+        ub = [380  400  450  430  470  490  500 545  510  565 584  850*ones(1,6); ... center
+              500*ones(1,6) 200 200 inf*ones(1,3) 500*ones(1,6);... height
               300*ones(1,8) 15   15  15  100*ones(1,6);    ... hwhm
               0.9 100*ones(1,nPeak-1);]; % shape
     
@@ -135,7 +135,7 @@ function [area] = peakFitter(dataDir,figDir,flName,sampleType,nIter)
     % options = optimoptions('fmincon','Display','off');%'MaxFunctionEvaluations',1e+10,'MaxIterations',1e+5);
         
     for iter =1:nIter
-        fprintf('%d/%d',iter,nIter)
+        fprintf('%d/%d iteration',iter,nIter)
         params = fmincon(costFnc,params,A,b,Aeq,beq,lb,ub);
         [curve] = peakSum(wavelength,params);
     
@@ -160,7 +160,7 @@ function [area] = peakFitter(dataDir,figDir,flName,sampleType,nIter)
             end
         end
     
-        title(flName,'Interpreter','none')
+        title(sprintf('%s  %d/%d iteration',flName,iter,nIter),'Interpreter','none')
     
         subplot(100,1,46:55)
         plot(wavelength,intensity-curve); hold on
@@ -173,7 +173,7 @@ function [area] = peakFitter(dataDir,figDir,flName,sampleType,nIter)
             plot([params(4*iPeak+1) params(4*iPeak+1)],[-15 15],clr(iPeak+1));      
         end
         xlim(xl)
-        ylim([-7 7]*10)
+        ylim([-1 1]*max(intensity)*0.03)
     
     
         SSR = sum((curve - intensity).^2); % sum of squared error

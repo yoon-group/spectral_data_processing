@@ -11,7 +11,7 @@ clear all; clc; clf
 
 campaign = 'SinkRise2024'; % 'SinkRise2024' or 'BearSpring2023'
 
-archiveDir = sprintf('%s/dyeTracingData/',pwd);
+archiveDir = sprintf('/home/public/dyeTracingData/');
 
 resultsDir = sprintf('%s/processed/%s/',pwd,campaign);
 if ~exist(resultsDir,'dir'); mkdir(resultsDir); end
@@ -83,6 +83,16 @@ for iTrip = 1:nTrip
         end
     end
 end
+
+%% load previous data
+flName = [resultsDir 'fieldSamples.mat'];
+if exist(flName,'file')
+    load([resultsDir 'fieldSamples.mat'],'sampleDate','area')
+    sampleDate_pre = sampleDate; 
+    area_pre = area;
+    clear area sampleDate
+end
+
 %% file name & time recognition
 flNameStruct = dir(dataDir);
 nSample = 0;
@@ -115,11 +125,24 @@ for iFl = 1:numel(flNameList)
 end
 flNameList = flNameList_;
 %% Peak Fitting
-nData0 = 0;
 area = cell(size(sampleDate));
 
-for iSample = 1:length(flNameList)
-    fprintf('%d/%d \n',iSample,length(flNameList))
+indNow = [1:length(flNameList)]';
+if exist('area_pre','var')
+    [~,indPre] = intersect(sampleDate,sampleDate_pre);
+    indExist = 0;
+    for i = indPre'
+        indExist = indExist + 1;
+        area{i} = area_pre{indExist};
+    end
+    
+    [~,indNow] = setdiff(sampleDate,sampleDate_pre);
+    
+end
+
+
+for iSample = indNow'
+    fprintf('%d/%d samples\n',iSample,length(flNameList))
     nIter=20;
     area{iSample} = peakFitter(dataDir,figDir,flNameList{iSample},'water',nIter);
 end
@@ -130,10 +153,11 @@ save([resultsDir 'fieldSamples.mat'],'sampleDate','area')
 
 %% Breakthrough Curves (direct sampling)
 clc; clf
+
 dyeType = {'uranine'};
 
 stdFlName = sprintf('%sSTD_%s.mat',resultsDir,dyeType{1});
-load([resultsDir 'fieldSamples.mat'],'area')
+load([resultsDir 'fieldSamples.mat'],'sampleDate','area')
 load(stdFlName,'slope'); 
 
 area = cell2mat(area);
@@ -187,8 +211,8 @@ ax.YTick = log10(ytick);
 ax.XTickLabel = num2str(xtick);
 ax.YTickLabel = num2str(ytick);
 ax.FontSize = 14;
-xlim([log10(0.1) log10(3)])
-ylim([log10(0.005) log10(10)])
+xlim([log10(0.1) log10(10)])
+ylim([log10(0.05) log10(10)])
 
 xlabel('travel time [day]')
 ylabel('concentration [ppb]')

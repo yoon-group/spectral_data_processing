@@ -14,7 +14,7 @@ clear all; clc; clf
 
 campaign = 'SinkRise2024'; % 'SinkRise2024' or 'BearSpring2023'
 
-archiveDir = sprintf('%s/dyeTracingData/',pwd);
+archiveDir = sprintf('/home/public/dyeTracingData/');
 
 resultsDir = sprintf('%s/processed/%s/',pwd,campaign);
 if ~exist(resultsDir,'dir'); mkdir(resultsDir); end
@@ -25,7 +25,7 @@ if ~exist(figDir,'dir'); mkdir(figDir); end
 %% file name recognition
 sampleType = 'water'; % 'water' or 'eluent'
 
-for dyeType = {'uranine'} % 'SrB', 'uranine', or 'RWT'
+for dyeType = {'SrB','uranine'} % 'SrB', 'uranine', or 'RWT'
     dataDir = sprintf('%s%s/STD_%s/',archiveDir,campaign, dyeType{1} );
     flNameStruct = dir(dataDir);
     nSample = 0;
@@ -39,16 +39,22 @@ for dyeType = {'uranine'} % 'SrB', 'uranine', or 'RWT'
     
     %% standard solutions
     cnc = nan(nSample,1);
+    dilutionFactor = ones(nSample,1);
     for iSample = 1:nSample
         flName = flNameList{iSample}(1:end-4);
         note = textscan(flName, '%s','delimiter','_' ); note = note{1};
     
         cnc(iSample) = str2double(sprintf('%s.%s',note{2},note{3}));
+        
         if length(note) >= 4
-            tmp = textscan(note{4},'%s','delimiter','x'); tmp = tmp{1};
-            dilutionFactor(iSample,1) = str2num(tmp{1});
-        else
-            dilutionFactor(iSample,1) = 1;
+            if contains(note{4},'x')
+                tmp = textscan(note{4},'%s','delimiter','x'); tmp = tmp{1};
+                dilutionFactor(iSample,1) = str2num(tmp{1});
+            end
+            if contains(note{4},'X')
+                tmp = textscan(note{4},'%s','delimiter','X'); tmp = tmp{1};
+                dilutionFactor(iSample,1) = str2num(tmp{1});
+            end
         end
     end
     dilutionFactor(find(dilutionFactor == 20)) = 21;
@@ -58,7 +64,12 @@ for dyeType = {'uranine'} % 'SrB', 'uranine', or 'RWT'
     %% Peak Fitting
     area = cell(length(flNameList_todo),1);
     for iSample = 1:length(flNameList_todo)
-        nIter=10; if cnc(iSample)>1; nIter=50; end
+        nIter=10; 
+        if cnc(iSample)>50
+            nIter=100; 
+        elseif cnc(iSample)>1
+            nIter=50; 
+        end
         area{iSample} = peakFitter(dataDir,figDir,flNameList_todo{iSample},sampleType,nIter);
         fprintf('sample %d/%d \n',iSample,length(flNameList_todo))
     end
