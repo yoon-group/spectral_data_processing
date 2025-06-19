@@ -39,11 +39,12 @@ from collections import defaultdict
 # =========================================================================
 # ============================ Define campaign  =============================
 
-##Uncomment to run the code
+##Uncomment to run the campaign 
+#campaing= "XXXX"
 
-campaign = "SinkRise2024"
+#campaign = "SinkRise2024"
 #campaign = "BearSpring2023"
-#campaign = 'MLAC2023'
+campaign = 'MLAC2023'
 
 # ============================ set up directory =============================
 archiveDir = '/home/public/dyeTracingData'
@@ -185,8 +186,9 @@ def extract_dilution(name):
 #df = [extract_dilution(name) for name in fl_name_list]
 df = np.array([extract_dilution(name) for name in fl_name_list])
 
-# # ##CORRECTION BY VOLUME,some samples requires dilution by water. Here you can consider those
-# df[df == 3] = 4
+
+## ##CORRECTION BY VOLUME,some samples requires dilution by water. Here you can consider those
+#df[df == 3] = 4
 #df[df == 4] = 5   
 df[df == 5] = 6
 df[df == 10] = 11
@@ -414,4 +416,5 @@ def flatten_results(results):
     return pd.DataFrame(flat_data)
 
 processed = flatten_results(results)
-processed.to_csv(f'seq_opt_slsqp_{campaign}', index=True) ##csv format exported 
+save_path = os.path.join(resultsDir, f'results_{campaign}.csv')
+processed.to_csv(save_path, index=True)
