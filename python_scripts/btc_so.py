@@ -1,21 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Jun  3 20:07:22 2025
-@author: Fabian QUichimbo
-Version 1.0
-"""
 
-###LIbrarires required
-import os
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-from datetime import datetime, timedelta
-from matplotlib.ticker import LogLocator, FuncFormatter, LogFormatterSciNotation
-from peak_fitter_so import peak_fitter_so
-import re
-from collections import defaultdict
 
 # ========================================================================
 #         Dye tracing water samples
@@ -39,12 +24,24 @@ from collections import defaultdict
 # =========================================================================
 # ============================ Define campaign  =============================
 
+###LIbrarires required
+import os
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from datetime import datetime, timedelta
+from matplotlib.ticker import LogLocator, FuncFormatter, LogFormatterSciNotation
+from peak_fitter_so import peak_fitter_so
+import re
+from collections import defaultdict
+
+
 ##Uncomment to run the campaign 
 #campaing= "XXXX"
 
-#campaign = "SinkRise2024"
+campaign = "SinkRise2024"
 #campaign = "BearSpring2023"
-campaign = 'MLAC2023'
+#campaign = 'MLAC2023'
 
 # ============================ set up directory =============================
 archiveDir = '/home/public/dyeTracingData'
