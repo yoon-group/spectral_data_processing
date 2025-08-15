@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 # %% ========================================================================
 # % 
 # %                          peakFitting function
-# % 
-# %                                                      Yoon Research Group
+# % % Yoon Research Group, Deparment of Geological Science, University of Florida
 # % -------------------------------------------------------------------------
 # % This code is to automate the multi-peak fitting process needed for 
 # % anlayzing the curves produced by a spectrofluorophotometer. The code 
@@ -15,9 +13,10 @@
 # % (SrB), and rhodamine WT (RWT) which typically have the ranges of peak 
 # % emission wavelength range as follows:
 # %   - when dissolved in watter
-# %       * uranine: 506 - 510 nm  (Peak 9/17)
-# %       * RWT: 572 - 577 nm (peak 10/17)
-# %       * SrB: 580 - 583 nm (peak 1/17)
+# %       * uranine: 506 - 510 nm
+# %       * eosin: 532-538 nm
+# %       * RWT: 572 - 577 nm 
+# %       * SrB: 580 - 583 nm 
 # %   - when dissolved in eluent (i.e., elutant)
 # %       * uranine: 514 - 519 nm
 # %       * RWT: 564 - 571 nm
@@ -30,11 +29,6 @@
 # % sample_type =  either 'water' or 'eluant'
 # % =========================================================================
 
-"""
-Created on Sun Jan 26 17:46:39 2025
-@author: Fabian Quichimbo
-version 1.0
-"""
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -121,16 +115,18 @@ def peak_fitter_so(data_dir, fig_dir, fl_name, sample_type, n_iter):
         def cost_fn(params):
             return np.sqrt(np.mean((intensity - peak_sum(wavelength, params)) ** 2))
         
-        n_peak = 17 #natural organic materials
         
+        ##Matrix with NOMS and dyes 
         params = np.array([
-        np.linspace(300, 500, 7).tolist() + [540]+ [507, 560, 582] + [600, 640, 680, 730, 760, 800],  # center
-        [10] * 8 + [500, 500, 500] + [10] * 6,  # height
-        [100] + [30] * 7 + [10, 10, 10] + [30] * 6,  # hwhm
-        [2] * 8 + [10, 10, 10] + [30] * 6  # shape
+        np.linspace(300, 500, 7).tolist() + [540]+ [508, 534, 572, 582] + [600, 640, 680, 730, 760],  # center
+        [10] * 8 + [500, 500, 500, 500] + [10] * 5,  # height
+        [100] + [30] * 7 + [10, 10,10, 10] + [30] * 5,  # hwhm
+        [2] * 8 + [10, 10,10, 10] + [30] * 5  # shape
         ])
         params=params.ravel(order='F') ## order [c1,h1,hw1,s1, c2,h2,hw2,s2,,,,c17,h17,hw17,s17]
         
+        n_peak = len(params) // 4   ##18 #natural organic materials
+
         fixed = np.array([
             [0] * n_peak,  # center
             [0] * n_peak,  # height
@@ -143,7 +139,7 @@ def peak_fitter_so(data_dir, fig_dir, fl_name, sample_type, n_iter):
             [0] * n_peak,  # center
             [0] * n_peak,  # height
             [0] * n_peak,  # hwhm
-            [0] + [2] * 7 + [10, 10, 10] + [5] * 6  # shape
+            [0] + [2] * 7 + [10, 10,10, 10] + [5] * 5  # shape
         ])        
         shape=shape.ravel(order='F')
                 
@@ -151,18 +147,18 @@ def peak_fitter_so(data_dir, fig_dir, fl_name, sample_type, n_iter):
         beq = shape
         
         lb = np.array([
-            [320, 340, 360, 370, 410, 430, 480, 525, 506, 555, 580] + [600] * 6,  # center
+            [320, 340, 360, 370, 410, 430, 480, 525], [506, 532, 555, 580] + [600] * 5,  # center
             [0] * n_peak,  # height
             [5] * n_peak,  # hwhm
-            [0.4] + [0] * (n_peak - 1)  # shape
+            [0.4] + [0]*7+ [9,9,9,9] (n_peak - 10)  # shape
         ])
         lb=lb.ravel(order='F') 
 
         ub = np.array([
-            [380, 400, 450, 430, 470, 490, 500, 545, 510, 565, 584] + [850] * 6,  # center
-            [500] * 6 + [200, 200, np.inf, np.inf, np.inf] + [500] * 6,  # height
-            [300] * 8 + [15, 15, 15] + [100] * 6,  # hwhm
-            [0.9] + [100] * (n_peak - 1)  # shape
+            [380, 400, 450, 430, 470, 490, 500, 545], [510, 538, 565, 584] + [850] * 5,  # center
+            [500] * 7 + [200], [np.inf, np.inf, np.inf, np.inf] + [500] * 5,  # height
+            [300] * 8 + [15,15,15, 15] + [100] * 5,  # hwhm
+            [0.9] + [100]*7+ [10,10,10,10] +[100] *(n_peak - 10)  # shape
         ])
         ub=ub.ravel(order='F') 
 
@@ -312,7 +308,7 @@ def peak_fitter_so(data_dir, fig_dir, fl_name, sample_type, n_iter):
                 area_op.append(trapz(peak, wavelength)) #### wavelength vs concentration
         if i_iter == n_iter - 1:
             print("Saving figure for the last iteration...")
-            plt.savefig(f"{fig_dir}/{fl_name}_iteration_{i_iter + 1}.png", dpi=350)
+            plt.savefig(f"{fig_dir}/{fl_name}_iteration_{i_iter + 1}.png", dpi=450)
         plt.show()
         plt.close()
     return area_op
