@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Sun Jan 26 17:47:23 2025
-@author: Fabian Quichimbo
-##version 0.1
-"""
 
 import os
 import numpy as np
@@ -45,8 +40,7 @@ figDir = os.path.join(resultsDir, 'fig/')
 os.makedirs(figDir, exist_ok=True)
 
 # ========================File name recognition================================
-sampleType = 'water'  # 'water' or 'eluent'
-dyeTypes = ['SrB', 'uranine']  # 'SrB', 'uranine', or 'RWT'
+dyeTypes = ['SrB', 'uranine']  # 'SrB', 'uranine', 'RWT', 'eosine'  ### This are the names of the dyes to be reading. 
 
 for dyeType in dyeTypes:
     dataDir = os.path.join(archiveDir, campaign, f'STD_{dyeType}/')
@@ -101,7 +95,7 @@ for dyeType in dyeTypes:
             nIter = 50 ##50    for stad =1
 
         # Call peakFitter function
-        area.append(peak_fitter_so(dataDir, figDir, flNameList[iSample], sampleType, nIter))
+        area.append(peak_fitter_so(dataDir, figDir, flNameList[iSample], nIter))
         print(f'Sample {iSample+1}/{nSample}') ### samples tracking label
 
     # Convert area list to a numpy array
@@ -110,10 +104,13 @@ for dyeType in dyeTypes:
     # Select the appropriate column based on dye type used 
     if dyeType == 'uranine':
         area = area[:, 0]   ###column 0 for uranine
+    elif dyeType == 'eosin':
+         area = area[:, 1]  ###columm 1 for RWT
     elif dyeType == 'RWT':
-        area = area[:, 1]  ###columm 1 for RWT
+        area = area[:, 2]  ###columm 1 for RWT
     elif dyeType == 'SrB':
-        area = area[:, 2] ### column 2 for SrB
+        area = area[:, 3] ### column 2 for SrB
+
 
     # Adjust area by dilution factor
     area = dilutionFactor * area
