@@ -3,7 +3,7 @@
 # %% ========================================================================
 # % 
 # %                          peakFitting function
-# % % Yoon Research Group, Deparment of Geological Science, University of Florida
+# %  Yoon Research Group, Deparment of Geological Science, University of Florida
 # % -------------------------------------------------------------------------
 # % This code is to automate the multi-peak fitting process needed for 
 # % anlayzing the curves produced by a spectrofluorophotometer. The code 
@@ -17,10 +17,6 @@
 # %       * eosin: 532-538 nm
 # %       * RWT: 572 - 577 nm 
 # %       * SrB: 580 - 583 nm 
-# %   - when dissolved in eluent (i.e., elutant)
-# %       * uranine: 514 - 519 nm
-# %       * RWT: 564 - 571 nm
-# %       * SrB: 575 - 582 nm
 # % 
 # % This peak fitting code is based the PYTHON using non-linear optimization 
 # % function 'optimize', method "SLSQP"
@@ -65,7 +61,7 @@ def peak_sum(x, params):
 # Main-function
 # =========================================================================
 
-def peak_fitter_so(data_dir, fig_dir, fl_name, sample_type, n_iter):
+def peak_fitter_so(data_dir, fig_dir, fl_name, n_iter):
     """
     Peak fitter function.
     Parameters:
@@ -110,115 +106,56 @@ def peak_fitter_so(data_dir, fig_dir, fl_name, sample_type, n_iter):
     wavelength = np.array(wavelength)
     intensity = np.array(intensity)
     
-    if sample_type == 'water':
-        
-        def cost_fn(params):
-            return np.sqrt(np.mean((intensity - peak_sum(wavelength, params)) ** 2))
-        
-        
-        ##Matrix with NOMS and dyes 
-        params = np.array([
-        np.linspace(300, 500, 7).tolist() + [540]+ [508, 534, 572, 582] + [600, 640, 680, 730, 760],  # center
-        [10] * 8 + [500, 500, 500, 500] + [10] * 5,  # height
-        [100] + [30] * 7 + [10, 10,10, 10] + [30] * 5,  # hwhm
-        [2] * 8 + [10, 10,10, 10] + [30] * 5  # shape
-        ])
-        params=params.ravel(order='F') ## order [c1,h1,hw1,s1, c2,h2,hw2,s2,,,,c17,h17,hw17,s17]
-        
-        n_peak = len(params) // 4   ##18 #natural organic materials
+    def cost_fn(params):
+        return np.sqrt(np.mean((intensity - peak_sum(wavelength, params)) ** 2))
+    
+    
+    ##Matrix with NOMS and dyes          
+    ##center  Fluorescein (505-509), Eosin (532-537), RWT (571-577), SrB (580 - 583) (POSITION 8,9,10,11) from index-=0
+    params = np.array([
+    np.linspace(300, 500, 7).tolist() + [540]+ [508, 534, 572, 582] + [600, 640, 680, 730, 760],  # center
+    [10] * 8 + [500, 500, 500, 500] + [10] * 5,  # height
+    [100] + [30] * 7 + [10, 10,10, 10] + [30] * 5,  # hwhm
+    [2] * 8 + [10, 10,10, 10] + [30] * 5  # shape
+    ])   
+    params=params.ravel(order='F') ## order [c1,h1,hw1,s1, c2,h2,hw2,s2,,,,c17,h17,hw17,s17]
+    n_peak = len(params) // 4   ##18 #natural organic materials
 
-        fixed = np.array([
-            [0] * n_peak,  # center
-            [0] * n_peak,  # height
-            [0] * n_peak,  # hwhm
-            [0] + [1] * (n_peak - 1)  # shape
-        ])
-        fixed=fixed.ravel(order='F')
-        
-        shape = np.array([
-            [0] * n_peak,  # center
-            [0] * n_peak,  # height
-            [0] * n_peak,  # hwhm
-            [0] + [2] * 7 + [10, 10,10, 10] + [5] * 5  # shape
-        ])        
-        shape=shape.ravel(order='F')
-                
-        Aeq = np.diag(fixed) ### it should diag the vector (fixed) from the estructure [c1,h1,hwhm,s1...c2,h2,hw2,s3.... s17] (68x68)
-        beq = shape
-        
-        lb = np.array([
-            [320, 340, 360, 370, 410, 430, 480, 525], [506, 532, 555, 580] + [600] * 5,  # center
-            [0] * n_peak,  # height
-            [5] * n_peak,  # hwhm
-            [0.4] + [0]*7+ [9,9,9,9] (n_peak - 10)  # shape
-        ])
-        lb=lb.ravel(order='F') 
+    fixed = np.array([
+        [0] * n_peak,  # center
+        [0] * n_peak,  # height
+        [0] * n_peak,  # hwhm
+        [0] + [1] * (n_peak - 1)  # shape
+    ])
+    fixed=fixed.ravel(order='F')
+    
+    shape = np.array([
+        [0] * n_peak,  # center
+        [0] * n_peak,  # height
+        [0] * n_peak,  # hwhm
+        [0] + [2] * 7 + [10, 10,10, 10] + [5] * 5  # shape
+    ])        
+    shape=shape.ravel(order='F')
+            
+    Aeq = np.diag(fixed) ### it should diag the vector (fixed) from the estructure [c1,h1,hwhm,s1...c2,h2,hw2,s3.... s17] (68x68)
+    beq = shape
+    
+    lb = np.array([
+        [320, 340, 360, 370, 410, 430, 480, 525]+[505, 532, 555, 580] + [600] * 5,  # center
+        [0] * n_peak,  # height
+        [5] * n_peak,  # hwhm
+        [0.4] + [0]*7+ [9,9,9,9]+ [0]*(n_peak - 12)  # shape
+    ])
+    lb=lb.ravel(order='F') 
 
-        ub = np.array([
-            [380, 400, 450, 430, 470, 490, 500, 545], [510, 538, 565, 584] + [850] * 5,  # center
-            [500] * 7 + [200], [np.inf, np.inf, np.inf, np.inf] + [500] * 5,  # height
-            [300] * 8 + [15,15,15, 15] + [100] * 5,  # hwhm
-            [0.9] + [100]*7+ [10,10,10,10] +[100] *(n_peak - 10)  # shape
-        ])
-        ub=ub.ravel(order='F') 
+    ub = np.array([
+        [380, 400, 450, 430, 470, 490, 500, 545]+ [510, 538, 565, 584] + [850] * 5,  # center
+        [500] * 7 + [200]+ [np.inf, np.inf, np.inf, np.inf] + [500] * 5,  # height
+        [300] * 8 + [15,15,15,15] + [100] * 5,  # hwhm
+        [0.9] + [100]*7+ [10.1,10.1,10.1,10.1] +[100] *5  # shape
+    ])
+    ub=ub.ravel(order='F') 
 
-        A=[]
-        b=[]
-
-################################################
-###############ELUENT###########################
-################################################
-    elif sample_type == 'eluent':
-        def cost_fn(params):
-            return np.sqrt(np.mean((intensity - peak_sum(wavelength, params)) ** 2))
-        
-        n_peak=8;
-        params = np.array([
-            [360, *np.linspace(400, 500, 3), 514, *np.linspace(600, 740, 3)],  # center
-            [300, *[10]*3, 350, *[10]*3],  # height
-            [100, *[30]*3, 10, *[30]*3],  # hwhm
-            [0.8, *[2]*3, 10, *[30]*3]  # shape
-        ])
-        params=params.ravel(order='F')
-        
-        fixed = np.array([
-            [0] * n_peak,           # center (all fixed)
-            [0] * n_peak,           # height (all fixed)
-            [0] * n_peak,           # hwhm (all fixed)
-            [0] + [1] * (n_peak - 1)  # shape (first fixed, others free)
-        ])
-        fixed = fixed.ravel(order='F')
-        
-        shape = np.array([
-            [0] * n_peak,           # center (all fixed)
-            [0] * n_peak,           # height (all fixed)
-            [0] * n_peak,           # hwhm (all fixed)
-            [0, 2, 2, 2, 10, 10, 5, 5]  # shape (first fixed, others free)
-        ])
-        shape = shape.ravel(order='F')
-        
-        # Equality constraints matrix (Aeq) and right-hand side vector (beq)
-        Aeq = np.diag(fixed)
-        beq = shape
-        
-        lb = np.array([
-            [320, 350, 380, 420, 512, 514, 550, 550],  # center
-            [0] * n_peak,  # height (zero for all peaks)
-            [0, 0, 0, 0, 5, 0, 0, 0],  # hwhm
-            [0.4] + [0] * (n_peak - 1)  # shape
-        ])
-        lb=lb.ravel(order='F')
-        
-        ub = np.array([
-            [370, 410, 430, 480, 516, 550, 780, 780],  # center
-            [np.inf] * n_peak,  # height (no upper bound for height)
-            [300, 100, 100, 100, 15, 100, 100, 100],  # hwhm
-            [0.9] + [100] * (n_peak - 1)  # shape
-        ])
-        ub=ub.ravel(order='F')
-                
-        A=[];
-        b=[];
         
 ##### optimization processe
     op_p=[]  # To store optimized params for each series  
@@ -239,6 +176,7 @@ def peak_fitter_so(data_dir, fig_dir, fl_name, sample_type, n_iter):
         def filter_infs(lb, ub):
             return [(l if np.isfinite(l) else -1e6, u if np.isfinite(u) else 1e6) for l, u in zip(lb, ub)]
         bounds = filter_infs(lb, ub)
+        
         constraints = [{'type': 'ineq', 'fun': eq_constraint}]  ##ineq
         res=minimize(cost_fn, params, method='SLSQP', bounds=bounds, constraints=constraints,
                       options = {'disp': False})
@@ -256,37 +194,39 @@ def peak_fitter_so(data_dir, fig_dir, fl_name, sample_type, n_iter):
         #goodness of fit metrics
         SSR = np.sum((intensity-curve) ** 2) # sum of squeared residual
         R2 = 1 - SSR / np.sum((intensity - np.mean(intensity)) ** 2) #Coef of determinantion
-        weight = 1 / np.maximum(np.sqrt(intensity), np.ones_like(intensity)) #weigthing factor
-        WSSR = np.sum((weight ** 2) * (curve - intensity) ** 2) #Weighted sum of squared residuals
-        DoF = len(intensity) - (4 * n_peak - np.sum(fixed)) #Degress of freedom
-        
+
+    
         # === Top Subplot ===
+        colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
         ax1 = plt.subplot(gs[0])
-        ax1.plot(wavelength, intensity, label='Data')
-        ax1.plot(wavelength, curve, label='Fit')
+        ax1.plot(wavelength, intensity, label='Measured', color="black", linestyle=':', linewidth=3)
+        ax1.plot(wavelength, curve, label='Fitted', color=colors[1] )
         ax1.legend(fontsize=16)
         ax1.set_ylabel('Intensity [-]', fontsize=16)
         ax1.set_xticklabels([])  #Remove x-axis numbers
-        ax1.set_xlabel(None)  # Removes xlabel if present
+        ax1.set_xlabel(None)  # Remove xlabel if present
         ax1.tick_params(labelsize=16, width=2)  # Increase font size of axis numbers
 
         ###leyend 
         xmin, xmax = ax1.get_xlim()
         ymin, ymax = ax1.get_ylim()
-        x_pos = 0.32 * (xmin + xmax)
-        y_pos = ymin + 0.5 * (ymax - ymin)
-        
+        x_pos = 0.6 * (xmin + xmax)
+        y_pos = ymin + 0.69 * (ymax - ymin)
+                
         # Add the metrics text (WSSR, DoF, SSR, R²) at dynamic position
         ax1.text(x_pos, y_pos,
-                 f"WSSR={WSSR:.2f}\nDoF={DoF:.2f}\nSSR={SSR:.2f}\nR²={R2:.2f}",
+                 f"R²={R2:.4f}",
                  fontsize=12)
         ##plot for multiple peaks during the fitting process (all the 17's peaks)
-        for iPeak in range(n_peak):
+        
+        grayscale = plt.cm.Greys(np.linspace(0.3, 0.3, n_peak))
+        
+        for iPeak in range(n_peak-1):
             if params[4 * iPeak + 1] > 1:  # should be bigger than 1, 
                 peak = pearson7(wavelength, params[4 * iPeak:4 * iPeak + 4])
-                ax1.plot(wavelength, peak, ':', label=f'Peak {iPeak + 1}')
+                #ax1.plot(wavelength, peak, ':', label=f'Peak {iPeak + 1}')
+                ax1.plot(wavelength, peak, color=grayscale[iPeak], label=f'Peak {iPeak + 1}')
         ax1.set_title(f"{fl_name} {i_iter+1}/{n_iter} iteration", fontsize=13)
-        #plt.legend()
         
         # Residuals
         # === Bottom Subplot ===
@@ -302,8 +242,8 @@ def peak_fitter_so(data_dir, fig_dir, fl_name, sample_type, n_iter):
 
         from scipy.integrate import trapz
         area_op = []
-        for iPeak in range(n_peak):
-            if 8 <= iPeak <= 10:  # Calculate area for specific peaks  ()
+        for iPeak in range(n_peak-1): ###ipeak from zero
+            if 8 <= iPeak <= 11:  # Calculate area for specific dye  peaks  (0-7)- NOMS. (8-11) DYES, (12-16) NOMS.
                 peak = pearson7(wavelength, params[4 * iPeak:4 * iPeak + 4])
                 area_op.append(trapz(peak, wavelength)) #### wavelength vs concentration
         if i_iter == n_iter - 1:
