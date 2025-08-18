@@ -23,9 +23,9 @@ from peak_fitter_so import peak_fitter_so
 # =========================================================================
 # Configuration- directory data
 # =========================================================================
-#campaign = 'SinkRise2024'  
+campaign = 'SinkRise2024'  
 #campaign='MLAC2023'
-campaign='BearSpring2023'
+#campaign='BearSpring2023'
 
 
 archiveDir = '/home/public/dyeTracingData'
@@ -158,7 +158,7 @@ for dyeType in dyeTypes:
     plt.ylabel('Concentration [ppb]')
     plt.title(f'{dyeType} (R^2 = {R2:.4f})')
     plt.legend()
-    plt.text(0.05, 0.85, equation, transform=plt.gca().transAxes, fontsize=10, verticalalignment='top')
+    #plt.text(0.05, 0.85, equation, transform=plt.gca().transAxes, fontsize=10, verticalalignment='top')
 
 
     # Log scale plot (right subplot)
