@@ -23,9 +23,9 @@ from peak_fitter_so import peak_fitter_so
 # =========================================================================
 # Configuration- directory data
 # =========================================================================
-campaign = 'SinkRise2024'  
+#campaign = 'SinkRise2024'  
 #campaign='MLAC2023'
-#campaign='BearSpring2023'
+campaign='BearSpring2023'
 
 
 archiveDir = '/home/public/dyeTracingData'
@@ -126,7 +126,7 @@ for dyeType in dyeTypes:
     res = minimize(cost_fn_op, 1e-3, args=(area,cnc),options={'maxiter': 1000})  ## optmization using Nelder-Mead method
     slope = res.x[0]
     intercept=res.x[0]
-    equation = f'y = {slope:.2e}x + {intercept:.2e}'
+    equation = f'y = {slope:.3e}x + {intercept:.3e}'
 
     # Calculate SSR and R^2
     SSR = np.sum((area * slope - cnc) ** 2)
@@ -156,7 +156,7 @@ for dyeType in dyeTypes:
     plt.ylabel('Concentration [ppb]')
     plt.title(f'{dyeType} (R^2 = {R2:.4f})')
     plt.legend()
-    #plt.text(0.05, 0.85, equation, transform=plt.gca().transAxes, fontsize=10, verticalalignment='top')
+    plt.text(0.05, 0.85, equation, transform=plt.gca().transAxes, fontsize=10, verticalalignment='top')
 
 
     # Log scale plot (right subplot)
