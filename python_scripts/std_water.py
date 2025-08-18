@@ -34,10 +34,11 @@ resultsDir = os.path.join(os.getcwd(),"std", campaign)  # Save data to '/{campai
 resultsDir_btc = os.path.join(os.getcwd(),"btc", campaign)  # Save data to .... you
 
 
-# Create directories if they don't exist
+#### Create directories if they don't exist
 os.makedirs(resultsDir, exist_ok=True)
 figDir = os.path.join(resultsDir, 'fig/')
 os.makedirs(figDir, exist_ok=True)
+
 
 # ========================File name recognition================================
 dyeTypes = ['SrB', 'uranine']  # 'SrB', 'uranine', 'RWT', 'eosine'  ### This are the names of the dyes to be reading. 
@@ -87,12 +88,11 @@ for dyeType in dyeTypes:
     # =========================================================================
     area = []
     for iSample in range(nSample):
-    #for iSample in [4]: ### for diff optim 
         nIter = 10 ##10   for standars 1
         if cnc[iSample] > 50: ##50
-            nIter = 50 ##50  #for std =1
+            nIter = 10 ##50  #for std =1
         elif cnc[iSample] > 1:
-            nIter = 50 ##50    for stad =1
+            nIter = 50 ##50
 
         # Call peakFitter function
         area.append(peak_fitter_so(dataDir, figDir, flNameList[iSample], nIter))
@@ -128,7 +128,6 @@ for dyeType in dyeTypes:
     intercept=res.x[0]
     equation = f'y = {slope:.2e}x + {intercept:.2e}'
 
-
     # Calculate SSR and R^2
     SSR = np.sum((area * slope - cnc) ** 2)
     R2 = 1 - SSR / np.sum((cnc - np.mean(cnc)) ** 2)
@@ -142,7 +141,6 @@ for dyeType in dyeTypes:
     # Ensure the directory exists
     os.makedirs(resultsDir_btc, exist_ok=True)
     np.save(flNameSTD_btc, {'area': area, 'cnc': cnc, 'slope': slope})
-
 
 
     # =========================================================================
