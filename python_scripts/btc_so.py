@@ -39,17 +39,17 @@ from collections import defaultdict
 ##Uncomment to run the campaign 
 #campaing= "XXXX"
 
-campaign = "SinkRise2024"
+#campaign = "SinkRise2024"
 #campaign = "BearSpring2023"
-#campaign = 'MLAC2023'
+campaign = 'MLAC2023'
 
 # ============================ set up directory =============================
 archiveDir = '/home/public/dyeTracingData'
 resultsDir = os.path.join(os.getcwd(),"btc", campaign)  # Save data to .... your location 
 
-##Create directories if they don't exist
+##Create directories if they don't exist  
 os.makedirs(resultsDir, exist_ok=True)
-figDir = os.path.join(resultsDir, 'fig/samples/')
+figDir = os.path.join(resultsDir, 'fig')
 os.makedirs(figDir, exist_ok=True)
 data_dir = os.path.join(archiveDir, campaign, 'sampleData')
 sample_type = 'water'  # either {'water', 'eluent'}
@@ -103,6 +103,8 @@ pattern_named = re.compile(r'^(.*?\.\d{6}\.\d{4}(?:\.[^.]+)*?)(?:\.(\d+)x[a-zA-Z
 
 
 # ==================== File Loading & Matching with the systematic structure ====================
+# ==================== File Loading & Matching with the systematic structure ====================
+
 fl_name_struct = os.listdir(data_dir) ### list of all file names from the data_dir
 print (fl_name_struct[:2])  ##chech the structure name of your data
 
@@ -126,8 +128,7 @@ for fl_name in fl_name_struct:
 # Step 2: Select highest dilution per sample (if there area multiple dilutions from the same sample)
 for base, files in file_dict.items():
     if any(mult is not None for _, mult in files):
-        # Keep highest multiplier
-        fl_name_list.append(max(files, key=lambda x: x[1] or 0)[0])
+        fl_name_list.append(max(files, key=lambda x: x[1] or 0)[0])          # Keep highest multiplier
     else:
         fl_name_list.append(files[0][0])
 
@@ -157,6 +158,7 @@ indNow = list(range(len(sampleDate)))
 area = [None] * len(sampleDate)
 
 
+# ==================== Load Existing Results (if available) ====================
 # ==================== Load Existing Results (if available) ====================
 pre_results = os.path.join(resultsDir, f'field_samples_{campaign}.npz')
 if os.path.exists(pre_results):
@@ -262,7 +264,7 @@ for count, iSample in enumerate(to_process, start=1):
     current_sample = fl_name_list[iSample]
     print(f'{count}/{len(to_process)} samples - Processing {current_sample}')
     
-    fitted_area = peak_fitter_so(data_dir, figDir, current_sample, sample_type, n_iter)
+    fitted_area = peak_fitter_so(data_dir, figDir, current_sample,n_iter)
     area[iSample] = fitted_area
 
     # Save updated or new result
@@ -321,12 +323,15 @@ for dyeType in dyeTypes:
         print(f"File {stdFlName} not found!")
         continue  # Skip this iteration if the file does not exist
 
+        ##all areas from the peak fitter 
     if dyeType == 'uranine':
         areas = np.array([r['area'][0] for r in results])
+    elif dyeType == 'eosin':
+            areas = np.array([r['area'][1] for r in results])    
     elif dyeType == 'RWT':
-        areas = np.array([r['area'][1] for r in results])
-    elif dyeType == 'SrB':
         areas = np.array([r['area'][2] for r in results])
+    elif dyeType == 'SrB':
+        areas = np.array([r['area'][3] for r in results])
     
     cnc = areas * slope
     
@@ -388,8 +393,9 @@ for dyeType in dyeTypes:
 
     ##Save the figure in the resultsDir directory
     save_path = os.path.join(resultsDir, f'{dyeType}_concentration_plot.png')
-    plt.savefig(save_path, dpi=300)  # Save as PNG with high resolution
-    #plt.savefig(f'{dyeType}_concentration_plot.png', dpi=300)  # Save as PNG (you can change file type if needed)
+    plt.savefig(save_path, dpi=450)  # Save as PNG with high resolution
+    plt.savefig(f'{dyeType}_concentration_plot.png', dpi=450)  # Save as PNG (you can change file type if needed)
+
     
     #show the plot
     plt.show()
