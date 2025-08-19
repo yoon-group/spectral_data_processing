@@ -111,7 +111,7 @@ def peak_fitter_so(data_dir, fig_dir, fl_name, n_iter):
     
     
     ##Matrix with NOMS and dyes          
-    ##center  Fluorescein (505-509), Eosin (532-537), RWT (571-577), SrB (580 - 583) (POSITION 8,9,10,11) from index-=0
+    ##center  uranine (505-509), Eosin (532-537), RWT (571-577), SrB (580 - 583) (POSITION 8,9,10,11) from index-=0
     params = np.array([
     np.linspace(300, 500, 7).tolist() + [540]+ [508, 534, 572, 582] + [600, 640, 680, 730, 760],  # center
     [10] * 8 + [500, 500, 500, 500] + [10] * 5,  # height
@@ -141,18 +141,18 @@ def peak_fitter_so(data_dir, fig_dir, fl_name, n_iter):
     beq = shape
     
     lb = np.array([
-        [320, 340, 360, 370, 410, 430, 480, 525]+[505, 532, 555, 580] + [600] * 5,  # center
+        [320, 340, 360, 370, 410, 430, 480, 525]+[506, 532, 555, 580] + [600] * 5,  # center
         [0] * n_peak,  # height
         [5] * n_peak,  # hwhm
-        [0.4] + [0]*7+ [9,9,9,9]+ [0]*(n_peak - 12)  # shape
+        [0.4] + [0]*7+ [8.5,8.5,8.5,8.5]+ [0]*(n_peak - 12)  # shape
     ])
     lb=lb.ravel(order='F') 
 
     ub = np.array([
         [380, 400, 450, 430, 470, 490, 500, 545]+ [510, 538, 565, 584] + [850] * 5,  # center
-        [500] * 7 + [200]+ [np.inf, np.inf, np.inf, np.inf] + [500] * 5,  # height
+        [600] * 7 + [350]+ [np.inf, np.inf, np.inf, np.inf] + [500] * 5,  # height
         [300] * 8 + [15,15,15,15] + [100] * 5,  # hwhm
-        [0.9] + [100]*7+ [10.1,10.1,10.1,10.1] +[100] *5  # shape
+        [0.9] + [5]*7+ [10.1,10.1,10.1,10.1] +[100] *5  # shape
     ])
     ub=ub.ravel(order='F') 
 
