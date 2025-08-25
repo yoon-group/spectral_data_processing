@@ -1,4 +1,4 @@
-##Decovolution approach
+## Deconvolution approach
 This code has been prepared to use in the following order:
 1. "Peak_fitter_so.py" function should be in the same directory as the std_water and btc_so. This function will be called on the next routines.
 2. The script "std_water.py" processes all dye standards prepared in water. It computes a linear correlation between dye concentrations and peak dye areas, which is then used to calibrate water samples for each campaign.
