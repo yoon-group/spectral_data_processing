@@ -1,4 +1,4 @@
-# Automated Spectral Deconvolution Codes for Quantitative Dye Tracing
+# Automated Spectral Deconvolution for Dye Sample Processing
 [![DOI](https://zenodo.org/badge/860567411.svg)](https://doi.org/10.5281/zenodo.17371869)
   
 This repository provides a set of Python scripts for processing and analyzing dye-tracer data using a deconvolution-based approach.
